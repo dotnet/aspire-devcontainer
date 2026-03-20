@@ -34,8 +34,7 @@
 		"vscode": {
 			"extensions": [
 				"ms-dotnettools.csdevkit",
-				"GitHub.copilot-chat",
-				"GitHub.copilot"
+				"github.copilot-chat"
 			]
 		}
 	}
