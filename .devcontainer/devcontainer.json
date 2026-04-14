@@ -5,6 +5,7 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/dotnet:dev-10.0-noble",
 	"features": {
+		"ghcr.io/microsoft/aspire-devcontainer-feature/aspire:2": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
 		"ghcr.io/devcontainers/features/powershell:1": {},
 		"ghcr.io/devcontainers/features/node:1": {},
@@ -28,14 +29,13 @@
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "dotnet restore",
-	"onCreateCommand": "curl -sSL https://aspire.dev/install.sh | bash",
 	"postStartCommand": "dotnet dev-certs https --trust",
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"ms-dotnettools.csdevkit",
 				"GitHub.copilot-chat",
-				"GitHub.copilot"
+				"microsoft-aspire.aspire-vscode"
 			]
 		}
 	}
