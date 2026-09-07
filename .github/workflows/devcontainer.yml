@@ -48,7 +48,7 @@ jobs:
       - name: Prepare test configuration
         run: |
           mkdir -p "$RUNNER_TEMP/devcontainer-diagnostics"
-          config="$RUNNER_TEMP/devcontainer-test.json"
+          config="$RUNNER_TEMP/devcontainer-test/devcontainer.json"
           args=(--output "$config")
           if [ "$SCENARIO" = typescript-no-dotnet ]; then
             args+=(--without-dotnet)

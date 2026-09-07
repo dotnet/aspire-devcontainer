@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
@@ -21,5 +21,7 @@ if (values['without-dotnet']) {
 
 const output = resolve(values.output);
 assert.notEqual(output, resolve('.devcontainer/devcontainer.json'), 'Use a separate output path for the test configuration.');
+assert.ok(['devcontainer.json', '.devcontainer.json'].includes(basename(output)),
+  'The test configuration must be named devcontainer.json or .devcontainer.json.');
 mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, `${JSON.stringify(configuration, null, 2)}\n`);

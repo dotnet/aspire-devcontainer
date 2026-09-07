@@ -68,7 +68,7 @@ npx --yes --package @devcontainers/cli@0.89.0 devcontainer up --workspace-folder
 npx --yes --package @devcontainers/cli@0.89.0 devcontainer exec --workspace-folder . node .github/scripts/smoke-test.mjs
 ```
 
-The default scenario is `python`; append `csharp` to the smoke command for the C# AppHost. For the SDK-free scenario, generate a temporary configuration with `node .github/scripts/prepare-config.mjs --output /tmp/aspire-no-dotnet.json --without-dotnet`, pass `--config /tmp/aspire-no-dotnet.json` to both CLI commands, and append `typescript-no-dotnet` to the smoke command.
+The default scenario is `python`; append `csharp` to the smoke command for the C# AppHost. For the SDK-free scenario, generate a temporary configuration with `node .github/scripts/prepare-config.mjs --output /tmp/aspire-no-dotnet/devcontainer.json --without-dotnet`, pass `--config /tmp/aspire-no-dotnet/devcontainer.json` to both CLI commands, and append `typescript-no-dotnet` to the smoke command.
 
 To check restart behavior, stop the container identified by the `up` output, then run both commands again. The smoke script stops its Aspire app; the devcontainer remains running for further use.
 
