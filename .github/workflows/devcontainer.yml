@@ -1,0 +1,60 @@
+name: Devcontainer
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    name: Lifecycle and polyglot smoke test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+
+      - name: Install Dev Containers CLI
+        run: npm install --global @devcontainers/cli@0.89.0
+
+      - name: Start devcontainer
+        id: container
+        run: |
+          devcontainer up --workspace-folder . --mount-workspace-git-root false --no-lockfile > "$RUNNER_TEMP/devcontainer-up.json"
+          container_id=$(jq --exit-status --raw-output '.containerId' "$RUNNER_TEMP/devcontainer-up.json")
+          echo "container_id=$container_id" >> "$GITHUB_OUTPUT"
+
+      - name: Test fresh container
+        run: devcontainer exec --workspace-folder . node .github/scripts/smoke-test.mjs
+
+      - name: Stop and reopen devcontainer
+        env:
+          CONTAINER_ID: ${{ steps.container.outputs.container_id }}
+        run: |
+          docker stop "$CONTAINER_ID"
+          devcontainer up --workspace-folder . --mount-workspace-git-root false --no-lockfile --expect-existing-container
+
+      - name: Test restarted container
+        run: devcontainer exec --workspace-folder . node .github/scripts/smoke-test.mjs
+
+      - name: Remove test container
+        if: always() && steps.container.outputs.container_id != ''
+        env:
+          CONTAINER_ID: ${{ steps.container.outputs.container_id }}
+        run: docker rm --force --volumes "$CONTAINER_ID"
