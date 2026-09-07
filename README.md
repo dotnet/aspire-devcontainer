@@ -49,9 +49,17 @@ Trust inside the container does not automatically make your host browser trust t
 
 ## CI checks
 
-The [Devcontainer workflow](.github/workflows/devcontainer.yml) runs on pull requests, pushes to `main`, and manual dispatch. It starts the actual devcontainer and runs [smoke checks](.github/scripts/smoke-test.mjs) before and after stopping and reopening it.
+The [Devcontainer workflow](.github/workflows/devcontainer.yml) runs on pull requests, pushes to `main`, and manual dispatch. Each matrix job starts the actual devcontainer and runs [smoke checks](.github/scripts/smoke-test.mjs) before and after stopping and reopening it:
 
-The checks cover non-root workspace access, installed tooling, certificate trust from the startup hook, Docker-in-Docker, a compiled .NET console app, and an Aspire app with a TypeScript AppHost, Python API, React frontend, and Redis. HTTPS requests verify certificates normally; the checks do not bypass TLS validation. Sample projects are created inside the container, not in the repository. VS Code extension installation and editor/debugger behavior are not covered.
+| Scenario | AppHost and services |
+| --- | --- |
+| Python and React | TypeScript AppHost, FastAPI, React, and Redis; also compiles a .NET console app |
+| C# and Blazor | C# AppHost, ASP.NET Core API, Blazor, and Redis |
+| TypeScript without .NET SDK | TypeScript AppHost, Express, and React, with the standalone .NET SDK feature omitted |
+
+All jobs check non-root workspace access, tooling, startup certificate trust, Docker-in-Docker, and app endpoints. HTTPS requests verify certificates normally. The SDK-free job checks that `dotnet` is absent from `PATH` before and after running Aspire; Aspire still manages its own bundled .NET components. This is a test-only configuration, not a separate editor preset.
+
+The Redis check uses a non-expiring sentinel value rather than timing-dependent response comparisons. Failures preserve container, AppHost, and resource logs as workflow artifacts. Sample projects stay inside the container. VS Code extensions, debugging, browser rendering, and IDE port forwarding are not covered.
 
 To run the same checks locally with Docker running:
 
@@ -59,6 +67,8 @@ To run the same checks locally with Docker running:
 npx --yes --package @devcontainers/cli@0.89.0 devcontainer up --workspace-folder . --mount-workspace-git-root false --no-lockfile
 npx --yes --package @devcontainers/cli@0.89.0 devcontainer exec --workspace-folder . node .github/scripts/smoke-test.mjs
 ```
+
+The default scenario is `python`; append `csharp` to the smoke command for the C# AppHost. For the SDK-free scenario, generate a temporary configuration with `node .github/scripts/prepare-config.mjs --output /tmp/aspire-no-dotnet.json --without-dotnet`, pass `--config /tmp/aspire-no-dotnet.json` to both CLI commands, and append `typescript-no-dotnet` to the smoke command.
 
 To check restart behavior, stop the container identified by the `up` output, then run both commands again. The smoke script stops its Aspire app; the devcontainer remains running for further use.
 
